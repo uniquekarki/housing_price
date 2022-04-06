@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelEncoder, StandardScaler
+import pickle
 
 def feature_encode(df):
     # categorical feature encoding
@@ -34,13 +35,13 @@ def poor_corr_columns(df):
     return to_remove
 
 def data_scale(df):
-    numeric_col = df.select_dtypes(includes = [np.number]).columns.to_list()
+    numeric_col = df.select_dtypes(include = [np.number]).columns.to_list()
     num_col_x = numeric_col[:-1]
     num_col_y = numeric_col[-1]
     scaler_x = StandardScaler()
     scaled_x_df = scaler_x.fit_transform(df[num_col_x])
     scaler_y = StandardScaler()
-    scaled_y_df = scaler_y.fit_tramsform(df[num_col_y])
+    scaled_y_df = scaler_y.fit_transform(df[num_col_y].values.reshape(-1, 1))
     
     file1 = open('../models/data-cleaning-models/scaler_x.pkl', 'wb')
     pickle.dump(cat_encoder, file1)
@@ -74,10 +75,7 @@ def clean_train(df):
     # Dropping null values
     df.dropna(inplace = True)
     
-    # Scaling data
-    numeric_col = df.select_dtypes(includes = [np.number]).columns.to_list()
-    num_col_x = numeric_col[:-1]
-    num_col_y = numeric_col[-1]
-    df[num_col_x], df[num_col_y] = data_scale(df)
+    # categorical feature encoding
+    df = feature_encode(df)
     
-    return df
+    return df, to_remove
