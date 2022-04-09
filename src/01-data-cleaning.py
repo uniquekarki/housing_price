@@ -27,7 +27,7 @@ def null_columns(df):
 def poor_corr_columns(df):
     # poor correlation from numeric data
     to_remove = []
-    num_df = df.select_dtype(include = [np.number])
+    num_df = df.select_dtypes(include = [np.number])
     corr_mat = num_df.corr()
     corr_mat = corr_mat.SalePrice.sort_values(ascending = False)
     poor_corr = corr_mat[(corr_mat.values < 0.35) & (corr_mat.values > -0.03)]
