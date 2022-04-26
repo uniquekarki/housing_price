@@ -16,6 +16,16 @@ def feature_encode(df):
     pickle.dump(cat_encoder, file)
     return df
 
+def test_encode(df_test):
+    picklefile_enc = open('../models/data-cleaning-models/cat_encoder.pkl', 'rb')
+    cat_encoder = pickle.load(picklefile_enc)
+    
+    for i in cat_col:
+        encoder = cat_encoder[i]
+        df_test[i]= encoder.fit_transform(df_test[i])
+        
+    return df_test
+
 def null_columns(df):
     # null values
     to_remove = []
@@ -29,8 +39,8 @@ def poor_corr_columns(df):
     to_remove = []
     num_df = df.select_dtypes(include = [np.number])
     corr_mat = num_df.corr()
-    corr_mat = corr_mat.SalePrice.sort_values(ascending = False)
-    poor_corr = corr_mat[(corr_mat.values < 0.35) & (corr_mat.values > -0.03)]
+    corr_mat = corr_mat['SalePrice'].sort_values(ascending = False)
+    poor_corr = corr_mat[(corr_mat.values < 0.35) & (corr_mat.values > -0.035)]
     to_remove = np.append(to_remove, poor_corr.index.to_list())
     return to_remove
 
@@ -44,24 +54,24 @@ def data_scale(df):
     scaled_y_df = scaler_y.fit_transform(df[num_col_y].values.reshape(-1, 1))
     
     file1 = open('../models/data-cleaning-models/scaler_x.pkl', 'wb')
-    pickle.dump(cat_encoder, file1)
+    pickle.dump(scaler_x, file1)
     
     file2 = open('../models/data-cleaning-models/scaler_y.pkl', 'wb')
-    pickle.dump(cat_encoder, file2)
+    pickle.dump(scaler_y, file2)
     
-    return scaled_x_df, scaled_y_df
+    return num_col_x, num_col_y, scaled_x_df, scaled_y_df
     
 def clean_train(df):
     
     # Removing the outliers from 
     Q1 = df.SalePrice.quantile(0.25)
-    Q3 = df.SalePrice.quamtile(0.75)
+    Q3 = df.SalePrice.quantile(0.75)
     IQR = Q3 - Q1
     bound = Q3 + 3 * IQR
-    df.drop(df[df.Saleprice > bound].index, axis = 0, inplace = True)
+    df.drop(df[df.SalePrice > bound].index, axis = 0, inplace = True)
     
     # multicollinearity
-    to_remove = ['GarageCars','1stFlrSF','GrLivArea','FullBath'] # Observation from data visualization
+    to_remove = np.array(['Id','GarageCars','1stFlrSF','GrLivArea','FullBath'], dtype = object) # Observation from data visualization
     
     #poor correlation
     to_remove = np.append(to_remove, poor_corr_columns(df))
@@ -69,13 +79,35 @@ def clean_train(df):
     # null handling
     to_remove = np.append(to_remove, null_columns(df))
     
+    # Print to remove
+    print(to_remove)
+    
     # removing columns
     df.drop(to_remove, axis = 1, inplace = True)
     
     # Dropping null values
     df.dropna(inplace = True)
     
-    # categorical feature encoding
-    df = feature_encode(df)
+    # # categorical feature encoding
+    # df = feature_encode(df)
     
     return df, to_remove
+
+def clean_test(df_test, to_remove):
+    df_test.drop(to_remove, axis = 1, inplace = True)
+    
+    picklefile_scale = open('../models/data-cleaning-models/scaler_x.pkl', 'rb')
+    scaler_x = pickle.load(picklefile_scale)
+    
+    cat_col = df.select_dtypes(include = ['object']).columns.to_list()
+    numeric_col = df_test.select_dtypes(include = [np.number]).columns.to_list()
+    scaled_x_df_test = scaler_x.fit_transform(df_test[num_col_x])
+    df_test[num_col_x]= scaled_x_df_test
+    
+    df_test.dropna(inplace = True)
+    
+    df_test = test_encode(df_test)
+        
+    return df_test
+        
+    
