@@ -18,14 +18,11 @@ Project Organization
 ------------
 
     ├── LICENSE
-    ├── Makefile                     <- Makefile with commands like `make data` or `make train`
     ├── README.md                    <- The top-level README for developers using this project.
     ├── data
     │   ├── prediction               <- Final result.
     │   ├── processed                <- The final, canonical data sets for modeling.
     │   └── raw                      <- The original, immutable data dump.
-    │
-    ├── docs                         <- A default Sphinx project; see sphinx-doc.org for details
     │
     ├── models                       <- Trained and serialized models, model predictions, or model summaries
     │   ├── data-cleaning-models     <- Models used for categorical feature encoding and feature scaling.
