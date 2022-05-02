@@ -4,7 +4,7 @@ Housing Price
 Housing price ML model
 
 ### To run the project:
-1. Intall the requirement from requirements.txt.
+1. Install the requirement from requirements.txt.
 2. Go to '/src'.
 3. Run `main.py` file.
 
