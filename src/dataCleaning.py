@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 import pickle
 
-def feature_encode(df):
+def train_encode(df):
     # categorical feature encoding
     cat_columns = df.select_dtypes(include = ['object']).columns.to_list()
     cat_encoder = {}
@@ -16,7 +16,7 @@ def feature_encode(df):
     pickle.dump(cat_encoder, file)
     return df
 
-def test_encode(df_test):
+def test_encode(df_test, cat_col):
     picklefile_enc = open('../models/data-cleaning-models/cat_encoder.pkl', 'rb')
     cat_encoder = pickle.load(picklefile_enc)
     
@@ -79,9 +79,6 @@ def clean_train(df):
     # null handling
     to_remove = np.append(to_remove, null_columns(df))
     
-    # Print to remove
-    print(to_remove)
-    
     # removing columns
     df.drop(to_remove, axis = 1, inplace = True)
     
@@ -99,14 +96,14 @@ def clean_test(df_test, to_remove):
     picklefile_scale = open('../models/data-cleaning-models/scaler_x.pkl', 'rb')
     scaler_x = pickle.load(picklefile_scale)
     
-    cat_col = df.select_dtypes(include = ['object']).columns.to_list()
+    cat_col = df_test.select_dtypes(include = ['object']).columns.to_list()
     numeric_col = df_test.select_dtypes(include = [np.number]).columns.to_list()
-    scaled_x_df_test = scaler_x.fit_transform(df_test[num_col_x])
-    df_test[num_col_x]= scaled_x_df_test
+    scaled_x_df_test = scaler_x.fit_transform(df_test[numeric_col])
+    df_test[numeric_col]= scaled_x_df_test
     
     df_test.dropna(inplace = True)
     
-    df_test = test_encode(df_test)
+    df_test = test_encode(df_test, cat_col)
         
     return df_test
         
